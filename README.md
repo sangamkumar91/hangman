@@ -1,1 +1,1 @@
-# Hulu-Challenge
+# Computer Plays Hangman
