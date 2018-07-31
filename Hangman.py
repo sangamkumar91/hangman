@@ -1,23 +1,25 @@
-import requests
 import time
+import os
 
+import requests
 from requests import RequestException
-from Gallow import Gallow
-from Word import Word
+
 from DataMuseWordFetcher import DataMuseWordFetcher
+from Gallow import Gallow
 from RankUtils import RankUtils
+from Word import Word
 
 
 class Hangman:
 
-    EMAIL = "shantanu27.bits@gmail.com"
-    INIT_URL = "http://gallows.hulu.com/play?code="
-    GALLOW_URL = "http://gallows.hulu.com/play?code={}&token={}&guess={}"
+    INIT_URL = '{}/play'.format(os.environ['HANGMAN_URL'])
+    GALLOW_URL = INIT_URL + '?token={}&guess={}'
     MOST_FREQUENT = ['E', 'T', 'A', 'O', 'I', 'N', 'S', 'R', 'H']
 
     def __init__(self):
+        print("Starting Game")
         self.gallow = None
-        self.parse_gallow(Hangman.INIT_URL + Hangman.EMAIL)
+        self.parse_gallow(Hangman.INIT_URL)
         self.words = list()
         self.guess_list = list()
         self.word_fetcher = DataMuseWordFetcher()
@@ -25,6 +27,7 @@ class Hangman:
         self.next_guess_char = None # Remove
 
     def begin(self):
+        print(self.gallow)
         self.warmup()
         self.init_words()
         while self.check_game_complete_state() is False:
@@ -36,7 +39,7 @@ class Hangman:
         next_guess_char = RankUtils.find_next_guess(self.words, self.guess_list)
         print("Next Guess: {}".format(next_guess_char))
         self.next_guess_char = next_guess_char
-        self.parse_gallow(Hangman.GALLOW_URL.format(Hangman.EMAIL, self.gallow.token, next_guess_char))
+        self.parse_gallow(Hangman.GALLOW_URL.format(self.gallow.token, next_guess_char))
         self.guess_list.append(next_guess_char)
         self.update_word_params()
         print(self.gallow)
@@ -50,11 +53,14 @@ class Hangman:
             self.words.append(Word(word))
 
     def warmup(self):
+        print("Warming up.")
         index = 0
-        self.parse_gallow(Hangman.GALLOW_URL.format(Hangman.EMAIL, self.gallow.token, Hangman.MOST_FREQUENT[index]))
+        self.parse_gallow(Hangman.GALLOW_URL.format(self.gallow.token, Hangman.MOST_FREQUENT[index]))
+        print(self.gallow)
         self.guess_list.append(Hangman.MOST_FREQUENT[index])
         index += 1
-        self.parse_gallow(Hangman.GALLOW_URL.format(Hangman.EMAIL, self.gallow.token, Hangman.MOST_FREQUENT[index]))
+        self.parse_gallow(Hangman.GALLOW_URL.format(self.gallow.token, Hangman.MOST_FREQUENT[index]))
+        print(self.gallow)
         self.guess_list.append(Hangman.MOST_FREQUENT[index])
 
     def parse_gallow(self, url):
